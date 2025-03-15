@@ -185,5 +185,5 @@ emis_calibration = 0.002 * ... + 0.49  # 发射率计算公式
 
 ---
 
-> 📧 如有其他问题，请联系：your_email@example.com  
-> 🔗 项目地址：[github.com/yourname/modis-processor](https://github.com/yourname/modis-processor)
+> 📧 如有其他问题，请联系：guwaakzi@gmail.com  
+> 🔗 项目地址：[https://github.com/Guwaakzi/MODIS_Automated_Processing]
