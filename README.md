@@ -1,15 +1,11 @@
-本工具用于处理 MODIS 热红外数据，支持以下数据的自动化处理：
+---
 
-热红外波段：（27、28、29、30、31、32 ）波段（波段可自定义）
+# MODIS 热红外数据自动化处理工具
 
-发射率数据：31、32 波段发射率
-
-地表温度数据：LST（Land Surface Temperature）
-
-质量控制标识：QC（Quality Control）
-
+本工具用于自动化处理 MODIS 热红外数据，支持热红外波段、发射率数据、地表温度数据（LST）和质量控制标识（QC）的提取与处理。工具支持自定义波段配置，并生成包含经度、纬度、热红外亮温、发射率、LST 温度和 QC 标识的处理结果。
 处理后文件包含以下列数据：
 经度 纬度 TIR27 TIR28 TIR29 TIR30 TIR31 TIR32 发射率31 发射率32 LST温度 QC标识
+---
 
 ## 📂 输入数据结构要求
 
@@ -29,9 +25,9 @@
 ```
 
 ### 文件命名规范
-- 日期目录：8位数字（示例：230806 表示 2023年8月6日）
-- HDF文件：必须包含相同的时间戳标识（示例中`.h08v03.061.2023086233058`）
-- 匹配规则：LST和TIR文件时间戳需完全一致
+- **日期目录**：8位数字（示例：`230806` 表示 2023年8月6日）
+- **HDF文件**：必须包含相同的时间戳标识（示例中 `.h08v03.061.2023086233058`）
+- **匹配规则**：LST 和 TIR 文件的时间戳需完全一致
 
 ---
 
@@ -106,37 +102,69 @@ proc_datatest/
 
 ## 🔄 处理流程
 1. **文件匹配**  
-   - 自动识别同时间戳的LST和TIR文件
+   - 自动识别同时间戳的 LST 和 TIR 文件
    - 创建处理目录（`proc_`前缀）
 
 2. **数据投影**  
-   - 将HDF转换为ENVI格式（WGS84坐标系）
-   - 分辨率自动计算（约1km）
+   - 将 HDF 转换为 ENVI 格式（WGS84 坐标系）
+   - 分辨率自动计算（约 1km）
 
 3. **格式转换**  
-   - 生成ASCII中间文件
-   - 过滤无效数据（QC=0的有效数据）
+   - 生成 ASCII 中间文件
+   - 过滤无效数据（QC=0 的有效数据）
 
 4. **数据合并**  
    - 多日数据智能合并
    - 坐标重复时自动取平均值
 
 5. **亮温转换**  
-   - 使用Planck公式计算亮温：  
+   - 使用 Planck 公式计算亮温：  
      ![BT Formula](https://latex.codecogs.com/png.latex?T%3D%5Cfrac%7Bhc%7D%7Bk%5Clambda%5Cln%5Cleft%28%5Cfrac%7B2hc%5E2%7D%7B%5Clambda%5E5L%7D&plus;1%5Cright%29%7D)
+
+---
+
+## ⚙️ 配置文件说明 (`config/config.yaml`)
+
+### 常量参数
+```yaml
+constants:
+  planck_constant: 6.62607015e-34  # 普朗克常数 h, J·s
+  speed_of_light: 2.99792458e8     # 光速 c, m/s
+  boltzmann_constant: 1.380649e-23 # 玻尔兹曼常数 k, J/K
+```
+
+### 热红外波段配置
+```yaml
+TIR_bands:
+  band_numbers: [7, 8, 9, 10, 11, 12]  # Python 中的索引从 0 开始
+  band_names: ['TIR_27', 'TIR_28', 'TIR_29', 'TIR_30', 'TIR_31', 'TIR_32']
+```
+
+### MODIS 参数
+```yaml
+modis_parameters:
+  wavelengths: [6.715e-6, 7.325e-6, 8.550e-6, 9.730e-6, 11.030e-6, 12.020e-6]  # 波段 27-32 的中心波长 (单位: 米)
+  radiance_scales: [0.000117557, 0.00019245, 0.000532487, 0.000406323, 0.000840022, 0.000729698]  # 波段 27-32 的辐射尺度
+  radiance_offsets: [2730.5833, 2317.4883, 2730.5835, 1560.3333, 1577.3397, 1658.2213]  # 波段 27-32 的辐射偏移
+  emissivity_coefficients:  # 发射率计算参数
+    slope: 0.002  # 发射率计算斜率
+    intercept: 0.49  # 发射率计算截距
+  lst_coefficients:  # 地表温度计算参数
+    slope: 0.02  # 地表温度计算斜率
+```
 
 ---
 
 ## 🚨 常见问题
 
 ### Q1: 文件匹配失败
-**现象**：日志中显示`No matching files`  
+**现象**：日志中显示 `No matching files`  
 ✅ 解决方案：  
 1. 检查文件名时间戳是否一致  
 2. 验证文件路径是否符合规范  
-3. 确保HDF文件未被损坏（可用GDAL打开验证）
+3. 确保 HDF 文件未被损坏（可用 GDAL 打开验证）
 
-### Q2: GDAL初始化错误
+### Q2: GDAL 初始化错误
 **现象**：`RuntimeError: Unable to open dataset`  
 ✅ 解决方案：  
 ```bash
@@ -150,7 +178,7 @@ set GDAL_DATA=C:\path\to\anaconda3\Library\share\gdal
 ### Q3: 坐标精度问题
 **现象**：合并后数据量异常减少  
 ✅ 处理逻辑：  
-- 系统默认保留2位小数（经度纬度）
+- 系统默认保留 2 位小数（经度纬度）
 - 可通过修改源码调整精度：  
 ```python
 # 在 ascii_to_column 方法中修改
@@ -159,31 +187,23 @@ lon_lat_fmt = ['%.2f', '%.2f']  # 改为 %.3f 可提高精度
 
 ---
 
-## ⚙️ 高级配置
-
-### 修改投影参数
-```python
-# 在 save_to_raster 方法中修改
-target_srs = osr.SpatialReference()
-target_srs.ImportFromEPSG(3857)  # 改为Web墨卡托投影
-```
-
-### 调整亮温计算
-```python
-# 在 radiometric_to_bt 方法中修改
-modis_wavelengths = np.array([...])  # 自定义波段参数
-emis_calibration = 0.002 * ... + 0.49  # 发射率计算公式
-```
-
----
-
 ## 📜 注意事项
 1. 路径中请避免使用中文和空格
-2. 建议使用SSD硬盘处理大数据量
-3. 夜间数据处理耗时约为白天的1.5倍
-4. 最终输出文件编码为UTF-8
+2. 建议使用 SSD 硬盘处理大数据量
+3. 夜间数据处理耗时约为白天的 1.5 倍
+4. 最终输出文件编码为 UTF-8
 
 ---
 
 > 📧 如有其他问题，请联系：guwaakzi@gmail.com  
 > 🔗 项目地址：[https://github.com/Guwaakzi/MODIS_Automated_Processing]
+
+---
+
+### 版本记录
+- **v1.0.0**：初始版本，支持 MODIS 热红外数据自动化处理
+- **v1.1.0**：新增批量处理模式，优化文件匹配逻辑
+
+---
+
+希望这份完善的 `README.md` 能帮助用户更好地理解和使用您的工具！如果有其他需求，欢迎随时补充。
