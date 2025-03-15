@@ -1,0 +1,13 @@
+'2025':
+  '1205':
+    sensor_1:
+      temperature: true
+device_2:
+  sensor_2:
+    location: Room A
+    status: true
+hunian:
+  zhengyue:
+    jieri:
+      chunjie: true
+#没用的注释
