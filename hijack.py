@@ -266,7 +266,7 @@ class EasyDict_gu:
 
 # 使用示例
 if __name__ == "__main__":
-    file_path = "config.yaml"
+    file_path = "config/configtest.yaml"
     config = EasyDict_gu(file_path)
 
     # 情况1：通过动态路径设置设备采集数据（包含元组展开）
