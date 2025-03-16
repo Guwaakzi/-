@@ -1,5 +1,3 @@
-import time
-
 from deal import 猫迪大祭司
 
 猫迪大祭司().batch_core('datatest')
