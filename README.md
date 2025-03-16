@@ -5,8 +5,7 @@
 本工具用于自动化处理 MODIS 热红外数据，支持热红外波段、发射率数据、地表温度数据（LST）和质量控制标识（QC）的提取与处理。工具支持自定义波段配置，并生成包含经度、纬度、热红外亮温、发射率、LST 温度和 QC 标识的处理结果。
 
 ---
-处理后文件包含以下列数据：
-经度 纬度 TIR27 TIR28 TIR29 TIR30 TIR31 TIR32 发射率31 发射率32 LST温度 QC标识
+
 ## 📂 输入数据结构要求
 
 ### 目录结构
@@ -36,7 +35,7 @@
 ### 依赖安装
 ```bash
 # 基础依赖
-pip install numpy pandas pyyaml scipy tqdm
+pip install -r requirements.txt
 
 # GDAL推荐通过conda安装
 conda install -c conda-forge gdal
@@ -46,29 +45,32 @@ conda install -c conda-forge gdal
 ```bash
 # 检查GDAL版本
 gdalinfo --version
-# 应输出类似 GDAL 3.6.4 的版本信息
+# 应输出类似 GDAL 3.8.4 的版本信息
 ```
 
 ---
 
 ## 🚀 快速开始
 
-### 单日数据处理
-```python
-from your_module import 猫迪大祭司
-
-# 处理指定日期数据
-猫迪大祭司().core(
-    base_path='datatest',  # 数据根目录
-    date='230806'          # 日期目录名
-)
-```
-
 ### 批量处理模式
 ```python
 # 自动处理根目录下所有日期
 猫迪大祭司().batch_core('datatest')
 ```
+
+### 代码运行记录（YAML 文件）
+```yaml
+day:
+  t0230:
+    append_data: true         # 是否追加数据到文件
+    ascii_to_column: true     # 是否转换为列数据格式
+    load_modis_data: true     # 是否加载 MODIS 数据
+    save_to_ascii: true       # 是否保存为 ASCII 格式
+    save_to_raster: true      # 是否保存为 ENVI 格式
+```
+
+#### 防中断机制
+如果代码运行中断，某天日期下 `append_data` 为 `true`，则在重新运行代码时，会自动跳过该天的数据处理流程，避免重复计算，节省时间。
 
 ---
 
@@ -83,13 +85,16 @@ proc_datatest/
 │   │       ├── 0820.dat        # ENVI格式数据文件
 │   │       ├── 0820.hdr        # ENVI头文件
 │   │       └── 0820.txt        # 中间文本数据
-│   └── night/
+│   ├── night/
+│   ├── daycol.txt         # 当天白天数据
+│   ├── daycol.yaml        # 当天白天数据处理信息
+│   ├── nightcol.txt       # 当天夜间数据
+│   └── nightcol.yaml      # 当天夜晚数据处理信息
 ├── 230807/
-└── merged/
-    ├── L_daycol.txt           # 合并后的白天原始数据
-    ├── L_nightcol.txt         # 合并后的夜晚原始数据
-    ├── bt_L_daycol.txt        # 最终白天亮温数据
-    └── bt_L_nightcol.txt      # 最终夜晚亮温数据
+├── L_daycol.txt           # 合并后的白天原始数据
+├── L_nightcol.txt         # 合并后的夜晚原始数据
+├── bt_L_daycol.txt        # 最终白天亮温数据
+└── bt_L_nightcol.txt      # 最终夜晚亮温数据
 ```
 
 ### 数据文件说明
@@ -205,5 +210,3 @@ lon_lat_fmt = ['%.2f', '%.2f']  # 改为 %.3f 可提高精度
 - **v1.1.0**：新增批量处理模式，优化文件匹配逻辑
 
 ---
-
-希望这份完善的 `README.md` 能帮助用户更好地理解和使用您的工具！如果有其他需求，欢迎随时补充。
